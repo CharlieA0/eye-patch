@@ -16,3 +16,6 @@ cam0_img, cam1_img = data.get_gray(0)
 st.text("Example Image")
 img_np = np.array(cam0_img)
 st.image(img_np, use_column_width=True)
+
+st.text(data.calib)
+
