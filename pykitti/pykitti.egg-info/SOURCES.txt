@@ -1,0 +1,13 @@
+README.md
+setup.cfg
+setup.py
+pykitti/__init__.py
+pykitti/odometry.py
+pykitti/raw.py
+pykitti/tracking.py
+pykitti/utils.py
+pykitti.egg-info/PKG-INFO
+pykitti.egg-info/SOURCES.txt
+pykitti.egg-info/dependency_links.txt
+pykitti.egg-info/requires.txt
+pykitti.egg-info/top_level.txt

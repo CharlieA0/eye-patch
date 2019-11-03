@@ -1,0 +1,11 @@
+Metadata-Version: 1.1
+Name: pykitti
+Version: 0.3.1
+Summary: A minimal set of tools for working with the KITTI dataset in Python
+Home-page: https://github.com/utiasSTARS/pykitti
+Author: Lee Clement
+Author-email: lee.clement@robotics.utias.utoronto.ca
+License: MIT
+Download-URL: https://github.com/utiasSTARS/pykitti/tarball/0.3.1
+Description: UNKNOWN
+Platform: UNKNOWN
