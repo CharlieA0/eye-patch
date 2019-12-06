@@ -127,41 +127,84 @@ rect_density  = float((rect_disparities  >= 0).sum()) / float(rect_disparities.s
 
 # Find matching points between left and right images
 
+# # Initiate SIFT detector
+# sift = cv.xfeatures2d.SIFT_create()
+# # find the keypoints and descriptors with SIFT
+# kp1, des1 = sift.detectAndCompute(img1,None)
+# kp2, des2 = sift.detectAndCompute(img2,None)
+
 im0 = undistorted_img0
 im1 = undistorted_img1
 
-sift = cv.xfeatures2d.SIFT_create()
-keypoints = sift.detect((im0, img1_raw), None)
+# Initiate SIFT
+sift = cv.xfeatures2d.SIFT_create(contrastThreshold = 0.15)
+k0, des0 = sift.detectAndCompute(im0, None)
+k1, des1 = sift.detectAndCompute(im1, None)
 
-img0_points = np.zeros(im0.shape)
-img0_points = cv.drawKeypoints(im0, keypoints[0], img0_points, flags=cv.DRAW_MATCHES_FLAGS_DRAW_RICH_KEYPOINTS) 
+# FLANN parameters
+FLANN_INDEX_KDTREE = 1
+index_params = dict(algorithm = FLANN_INDEX_KDTREE, trees = 5)
+search_params = dict(checks=50)   # or pass empty dictionary
 
-"Left Image SIFT Matching Points"
-st.image(img0_points, use_column_width=True)
+flann = cv.FlannBasedMatcher(index_params,search_params)
+matches = flann.knnMatch(des0, des1, k=2)
 
-img1_points = np.zeros(im1.shape)
-img1_points = cv.drawKeypoints(im1, keypoints[1], img1_points, flags=cv.DRAW_MATCHES_FLAGS_DRAW_RICH_KEYPOINTS)
+# Need to draw only good matches, so create a mask
+matchesMask = [[0,0] for i in range(len(matches))]
 
-"Right Image SIFT Matching Points"
-st.image(img1_points, use_column_width=True)
+points1 = []
+points2 = []
+obj     = []
 
-f"{len(keypoints[0])} Points Found"
+# ratio test as per Lowe's paper
+for i,(m,n) in enumerate(matches):
+    if m.distance < 0.7*n.distance:
+        matchesMask[i]=[1,0]
+    else:
+        points1.append(k0[m.queryIdx].pt)
+        points2.append(k1[m.trainIdx].pt)
+
+points1 = np.array(points1)
+points2 = np.array(points2)
+
+draw_params = dict(matchColor = (0,255,0),
+                   singlePointColor = (255,0,0),
+                   matchesMask = matchesMask,
+                   flags = cv.DrawMatchesFlags_DEFAULT)
+
+img3 = cv.drawMatchesKnn(im0, k0, im1, k1, matches, None, **draw_params)
+st.image(img3, use_column_width=True)
+
+# st.text(points1)
+F, other = cv.findFundamentalMat(points1, points2)
+
+st.text(im0.size)
+
+st.text(cv.stereoRectifyUncalibrated(points1, points2, F, im0.shape))
+
+# img0_points = np.zeros(im0.shape)
+# img0_points = cv.drawKeypoints(im0, keypoints[0], img0_points, flags=cv.DRAW_MATCHES_FLAGS_DRAW_RICH_KEYPOINTS) 
+# 
+# "Left Image SIFT Matching Points"
+# st.image(img0_points, use_column_width=True)
+# 
+# img1_points = np.zeros(im1.shape)
+# img1_points = cv.drawKeypoints(im1, keypoints[1], img1_points, flags=cv.DRAW_MATCHES_FLAGS_DRAW_RICH_KEYPOINTS)
+# 
+# "Right Image SIFT Matching Points"
+# st.image(img1_points, use_column_width=True)
+# 
+# f"{len(keypoints[0])} Points Found"
 
 # The re-calibration objective function is the sum of squared epipolar errors
 # See Online Continuous Stereo Extrinsic Parameter Estimation (7), (8)
 
-st.text(K_00)
-st.text(K_01)
-st.text(T_00)
-st.text(T_01)
-
-Kl = K_00
-Kr = K_01
-t  = T_01
-
-def epipolar_error(Rr_t, Rl_t, Kl, Kr, ul, ur, f):
-
-    err = f * Rr_t.T
-    
-
+# st.text(K_00)
+# st.text(K_01)
+# st.text(T_00)
+# st.text(T_01)
+# 
+# Kl = K_00
+# Kr = K_01
+# t  = T_01
 
